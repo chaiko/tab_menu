@@ -1,0 +1,18 @@
+{
+   "browser_action": {
+      "default_icon": "35.png",
+      "popup": "menu.html"
+   },
+   "description": "Select, close, rearrange, and search your tabs from a toolbar menu!",
+   "icons": {
+      "128": "48.png",
+      "16": "16.png",
+      "32": "35.png",
+      "48": "48.png"
+   },
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDKJofYINOnW66XEYmGPh5rKtvJek1Iiv1rvupOg5r6cTMrxUVM3eCMB++TvH/PgAu0YhVXGNR83UY1RclfNeMvGpTlaPvdflgMt+ugU/GIAVrFgEjlqJTm9hZFKj3CHMUYP6khPcZ+VhrudtAUfE478pcG8szIYZk+I/IcNPFGHQIDAQAB",
+   "name": "Tab Menu",
+   "permissions": [ "tabs" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "7"
+}
