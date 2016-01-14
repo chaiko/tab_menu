@@ -6,7 +6,7 @@ body {
   margin: 0px;
   max-width: 288px;
   overflow-x: hidden;
-  font: 12px 'lucida grande', helvetica, arial, sans-serif;
+  font: 12px "Helvetica Neue", "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 #main {
@@ -16,8 +16,8 @@ body {
 #search {
   width: 284px;
   border: 1px solid #abc;
-  padding: 2px 1px;
-  margin-bottom: 1px;
+  padding: 2px 5px;
+  margin: 4px 4px 2px;
 }
 
 #search:focus {
