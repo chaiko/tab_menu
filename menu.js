@@ -107,11 +107,9 @@ function anim() {
     opacity: .7,
     distance: 5,
     scroll: false,
-    containment: 'document',
     axis: 'y',
     items: '.item',
     cancel: '.close',
-    tolerance: 'pointer',
     start: function() {
       if (!document.body.className)
         document.body.style.cssText = 'overflow-y: hidden';
