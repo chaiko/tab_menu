@@ -14,15 +14,15 @@ function list(tabs) {
 
     var favicon = document.createElement('img');
     if (f) {
-		favicon.src = f;
-		if (u) favicon.title = u;
-	}
+      favicon.src = f;
+      if (u) favicon.title = u;
+    }
 
     var title = document.createElement('div');
     title.className = 'title';
     if (t.length > 38)
       title.title = t;
-    title.textContent = t;  
+    title.textContent = t;
 
     var close = document.createElement('div');
     close.className = 'close';
