@@ -13,8 +13,10 @@ function list(tabs) {
     li.className = 'item' + (tab.selected ? ' selected' : '');
 
     var favicon = document.createElement('img');
-    if (f) favicon.src = f;
-    if (u) favicon.title = u;
+    if (f) {
+		favicon.src = f;
+		if (u) favicon.title = u;
+	}
 
     var title = document.createElement('div');
     title.className = 'title';
