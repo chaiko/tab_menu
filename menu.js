@@ -1,100 +1,105 @@
-var main, moved = 0;
+var moved = 0;
 
 // generates the html for the tab list
 function list(tabs) {
   tabs.forEach(function(tab) {
 
-    var f = tab.favIconUrl, t = tab.title, u = tab.url;
+    var t = tab.title, u = tab.url;
     if (!u) u = '';
     if (!t) t = u;
 
-    var li = document.createElement('div');
-    li.tabIndex = 0;
-    li.className = 'item' + (tab.selected ? ' selected' : '');
+    var item = $("<div></div>", {
+      "tabindex": 0,
+      "class": 'item' + (tab.selected ? ' selected' : ''),
+      "data": {
+        "tabId": tab.id,
+        "url": u,
+        "keywords": ((t && t != u ? t : '') + ' ' + (u || '')).toLowerCase()
+      }
+    });
 
-    var favicon = document.createElement('img');
-    if (f) {
-      favicon.src = f;
-      if (u) favicon.title = u;
+    // favicon
+    if (tab.favIconUrl) {
+      $(item).append($("<img></img>", {"src": tab.favIconUrl, "title": u}));
+    } else {
+      // avoid Chrome rendering "title" attribute as alt text since around 60.x
+      $(item).append($("<img></img>"));
     }
 
-    var title = document.createElement('div');
-    title.className = 'title';
-    if (t.length > 38)
-      title.title = t;
-    title.textContent = t;
+    // text
+    $(item).append($("<div></div>", {"class": "title", "title": t, "text": t}));
 
-    var close = document.createElement('div');
-    close.className = 'close';
-    close.title = 'Close Tab';
-    close.textContent = 'x';
+    // close button
+    $(item).append($("<div></div>", {
+      "class": "close",
+      "title": "Close Tab",
+      "text": "x",
+      "on": {
+        "click": function(e) {
+          CloseTab(e, e.currentTarget.parentNode);
+        }
+      }
+    }));
 
-    li.appendChild(favicon);
-    li.appendChild(title);
-    li.appendChild(close);
-
-    li.tabId = tab.id;
-    li.url = u;
-    li.search = ((t && t != u ? t : '') + ' ' + (u || '')).toLowerCase();
-    main.appendChild(li);
+    $("#main").append(item);
   });
+
   anim();
 }
 
 // binds all the event listeners
 function anim() {
-
-  $('.close').click(function(e) {
-    cloz(e, e.currentTarget.parentNode);
+  $('.item').on("click", function(e) {
+    if (!e.button && !moved) {
+      chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+    }
+    if (e.button == 1) {
+      CloseTab(e, e.currentTarget);
+    }
   });
 
-  $('.item').mousedown(function(e) {
+  $('.item').on("mousedown", function(e) {
     if (!e.button) {
-      main.tabId = e.currentTarget.tabId;
+      $("#main").data("tabId", $(e.currentTarget).data("tabId"));
       moved = 0;
     }
   });
 
-  $('.item').click(function(e) {
-    if (!e.button && !moved)
-      chrome.tabs.update(e.currentTarget.tabId, { selected : true });
-    if (e.button == 1)
-      cloz(e, e.currentTarget);
-  });
-
-  $('.item, #search').keydown(function(e) {
+  $('.item, #search').on("keydown", function(e) {
     if (e.ctrlKey || e.altKey || e.shiftKey)
       return;
     var s = e.currentTarget, p;
-    if (e.keyCode == 38) p = 'previousSibling';
-    else if (e.keyCode == 40) p = 'nextSibling';
+    if (e.keyCode == 38) p = 'previousSibling';  // Up
+    else if (e.keyCode == 40) p = 'nextSibling';  // Down
     else return;
     while (s = s[p])
       if (s.focus && getComputedStyle(s).display != 'none')
         return s.focus();
   });
 
-  $('.item').keyup(function(e) {
-    if (e.keyCode == 13)
-      chrome.tabs.update(e.currentTarget.tabId, { selected : true });
-    if (e.keyCode == 46)
-      cloz(e, e.currentTarget);
+  $('.item').on("keyup", function(e) {
+    if (e.keyCode == 13)  // Enter
+      chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+    if (e.keyCode == 46)  // Delete
+      CloseTab(e, e.currentTarget);
   });
 
-  $('#search').bind('keyup change', function(e) {
+  // search
+  $('#search').on('keyup change', function(e) {
     var v = $(this).val();
     if (v) {
       $('#main').sortable('disable');
       v = v.toLowerCase().split(' ');
       $('.item').each(function() {
         for (var i = 0; i < v.length; i++) {
-          if (this.search.indexOf(v[i]) == -1) {
+          if ($(this).data("keywords").indexOf(v[i]) == -1) {
             $(this).css('display', 'none');
             break;
           }
         }
-        if (i >= v.length)
+        if (i >= v.length) {
           $(this).css('display', 'block');
+        }
       });
     }
     else {
@@ -105,7 +110,7 @@ function anim() {
 
   // makes the tab list sortable with drag-and-drop
   $('#main').sortable({
-    forcePlaceholderSize: true,
+    // forcePlaceholderSize: true,
     opacity: .7,
     distance: 5,
     scroll: false,
@@ -121,39 +126,40 @@ function anim() {
       document.body.style.cssText = '';
     },
     update: function() {
-      if (main.tabId) {
-        var i, t = document.querySelectorAll('.item');
-        for (i = 0; i < t.length; i++)
-          if (main.tabId == t[i].tabId)
-            break;
-        if (i < t.length) {
-          chrome.tabs.move(main.tabId, { index: i }, function(tab) {
-            chrome.tabs.get(tab.id, function(t) {
-              if (t.index != i)
-                location.reload();
-              else if (document.documentElement.className == 'osx')
-                chrome.tabs.create({ selected : false },
-                                   function(t) { chrome.tabs.remove(t.id); });
-            });
-          });
-          main.tabId = 0;
-        }
+      if ($("#main").data("tabId")) {
+        $(".item").each(function(i) {
+          if ($("#main").data("tabId") == $(this).data("tabId")) {
+            chrome.tabs.move(
+              $("#main").data("tabId"), { index: i },
+              function(tab) {
+                chrome.tabs.get(tab.id, function(t) {
+                  if (t.index != i)
+                    location.reload();
+                  else if (document.documentElement.className == 'osx')
+                    chrome.tabs.create({ selected : false },
+                                       function(t) { chrome.tabs.remove(t.id); });
+                });
+              });
+            $("#main").data("tabId", 0);
+          }
+        });
       }
     }
   });
 }
 
 // removes tab
-function cloz(e, tab) {
-  tab = main.removeChild(tab);
-  chrome.tabs.remove(tab.tabId);
+function CloseTab(e, tab) {
+  chrome.tabs.remove($(tab).data("tabId"));
+  $(tab).remove();
+
   e.stopPropagation();
   e.preventDefault();
 }
 
 // suppresses typing while not focused
 function mute(e) {
-  if (document.activeElement != $('#search')[0] && e.keyCode != 9)
+  if (document.activeElement != $('#search')[0] && e.keyCode != 9)  // 9: Tab
     e.preventDefault();
 }
 
@@ -164,13 +170,14 @@ function mode() {
     document.body.className = noscroll;
 }
 
-$(document).ready(function() {
-  main = document.getElementById('main');
+$(function() {
   if (~navigator.userAgent.indexOf('Macintosh'))
     document.documentElement.className = 'osx';
-  chrome.tabs.getAllInWindow(null, list);
-  $('#search').focus();
+  chrome.tabs.query({currentWindow: true}, list);
+  $('#search').trigger("focus");
+
   onkeydown = onkeypress = mute;
+
   mode();
   setInterval(mode, 50);
 });
