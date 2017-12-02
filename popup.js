@@ -140,12 +140,9 @@ function bindEventListeners() {
     items: '.item',
     cancel: '.close',
     start: function() {
-      if (!document.body.className)
-        document.body.style.cssText = 'overflow-y: hidden';
       moved = 1;
     },
     stop: function() {
-      document.body.style.cssText = '';
     },
     update: function() {
       if ($("#main").data("tabId")) {
@@ -155,11 +152,7 @@ function bindEventListeners() {
               $("#main").data("tabId"), { index: i },
               function(tab) {
                 chrome.tabs.get(tab.id, function(t) {
-                  if (t.index != i)
-                    location.reload();
-                  else if (document.documentElement.className == 'osx')
-                    chrome.tabs.create({ selected : false },
-                                       function(t) { chrome.tabs.remove(t.id); });
+                  if (t.index != i) location.reload();
                 });
               });
             $("#main").data("tabId", 0);
@@ -180,28 +173,7 @@ function closeTab(e, tab) {
   e.preventDefault();
 }
 
-// suppresses typing while not focused
-function mute(e) {
-  if (document.activeElement != $('#search')[0] && e.keyCode != 9)  // 9: Tab
-    e.preventDefault();
-}
-
-// checks for page overflow
-function updateOverflowMode() {
-  var noscroll = document.body.clientWidth < innerWidth ? 'overflow' : '';
-  if (document.body.className != noscroll)
-    document.body.className = noscroll;
-}
-
 $(function() {
-  if (~navigator.userAgent.indexOf('Macintosh'))
-    document.documentElement.className = 'osx';
-
   updateSearchText();
   chrome.tabs.query({currentWindow: true}, createTabList);
-
-  onkeydown = onkeypress = mute;
-
-  updateOverflowMode();
-  setInterval(updateOverflowMode, 50);
 });
