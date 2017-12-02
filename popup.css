@@ -25,6 +25,10 @@ body {
   -webkit-box-shadow: 0 0 3px #adf;
 }
 
+#search::placeholder {
+  font-style: italic;
+}
+
 .item {
   width: 286px;
   float: left;

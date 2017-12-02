@@ -1,9 +1,16 @@
 var moved = 0;
 
-// generates the html for the tab list
-function list(tabs) {
-  tabs.forEach(function(tab) {
+// updates search box placeholder text
+function updateSearchText() {
+  chrome.tabs.query({currentWindow: true}, function(tabs) {
+    var text = "Search from " + tabs.length + " tabs";
+    $("#search").attr("placeholder", text);
+  });
+}
 
+// generates the html for the tab list
+function createTabList(tabs) {
+  tabs.forEach(function(tab) {
     var t = tab.title, u = tab.url;
     if (!u) u = '';
     if (!t) t = u;
@@ -36,7 +43,7 @@ function list(tabs) {
       "text": "x",
       "on": {
         "click": function(e) {
-          CloseTab(e, e.currentTarget.parentNode);
+          closeTab(e, e.currentTarget.parentNode);
         }
       }
     }));
@@ -54,7 +61,7 @@ function anim() {
       chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
     }
     if (e.button == 1) {
-      CloseTab(e, e.currentTarget);
+      closeTab(e, e.currentTarget);
     }
   });
 
@@ -81,7 +88,7 @@ function anim() {
     if (e.keyCode == 13)  // Enter
       chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
     if (e.keyCode == 46)  // Delete
-      CloseTab(e, e.currentTarget);
+      closeTab(e, e.currentTarget);
   });
 
   // search
@@ -148,10 +155,11 @@ function anim() {
   });
 }
 
-// removes tab
-function CloseTab(e, tab) {
+// closes tab and removes it from the list
+function closeTab(e, tab) {
   chrome.tabs.remove($(tab).data("tabId"));
   $(tab).remove();
+  updateSearchText();
 
   e.stopPropagation();
   e.preventDefault();
@@ -173,7 +181,11 @@ function mode() {
 $(function() {
   if (~navigator.userAgent.indexOf('Macintosh'))
     document.documentElement.className = 'osx';
-  chrome.tabs.query({currentWindow: true}, list);
+
+  updateSearchText();
+
+  chrome.tabs.query({currentWindow: true}, createTabList);
+
   $('#search').trigger("focus");
 
   onkeydown = onkeypress = mute;
