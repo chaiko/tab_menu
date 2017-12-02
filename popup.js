@@ -85,9 +85,12 @@ function workaroundCrbug428044() {
   // Mac OS only
   chrome.runtime.getPlatformInfo(info => {
     if (info.os === 'mac') {
-      $("body").fadeOut(10).delay(10).fadeIn(30, function(){
-        $('#search').trigger("focus");
-      });
+      setTimeout(function() {
+        $("body").width($("body").width() + 1);
+        setTimeout(function() {
+          $("body").width($("body").width() - 1);
+        }, 100);
+      }, 100);
     }
   });
 }
