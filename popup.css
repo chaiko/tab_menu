@@ -64,18 +64,20 @@ body {
 }
 
 img {
-  float: left;
   width: 16px;
   height: 16px;
   margin-right: 5px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .title {
-  float: left;
   width: calc(100% - 10px - 16px - 5px);
   overflow-x: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .item:hover .title {
@@ -83,15 +85,15 @@ img {
 }
 
 .close {
-  float: left;
   text-align: right;
   width: 12px;
   font: bold 12px verdana, sans-serif;
   display: none;
+  vertical-align: middle;
 }
 
 .item:hover .close {
-  display: block;
+  display: inline-block;
 }
 
 .item .close {

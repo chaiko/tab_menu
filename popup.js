@@ -123,8 +123,7 @@ function bindEventListeners() {
           $(this).css('display', 'block');
         }
       });
-    }
-    else {
+    } else {
       $('.item').css('display', 'block');
       $('#main').sortable('enable');
     }
