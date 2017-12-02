@@ -10,34 +10,54 @@ function updateSearchText() {
 
 // generates the html for the tab list
 function createTabList(tabs) {
+  var $main = $("#main");
   tabs.forEach(function(tab) {
     var t = tab.title, u = tab.url;
     if (!u) u = '';
     if (!t) t = u;
 
-    var item = $("<div></div>", {
+    var $item = $("<div></div>", {
       "tabindex": 0,
       "class": 'item' + (tab.selected ? ' selected' : ''),
       "data": {
         "tabId": tab.id,
         "url": u,
         "keywords": ((t && t != u ? t : '') + ' ' + (u || '')).toLowerCase()
+      },
+      "on": {
+        "click": function(e) {
+          if (!e.button && !moved) {
+            chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+          }
+          if (e.button == 1) {
+            closeTab(e, e.currentTarget);
+          }
+        },
+        "keyup": function(e) {
+          if (e.keyCode == 13)  // Enter
+            chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+          if (e.keyCode == 46)  // Delete
+            closeTab(e, e.currentTarget);
+        },
+        "mousedown": function(e) {
+          if (!e.button) {
+            $("#main").data("tabId", $(e.currentTarget).data("tabId"));
+            moved = 0;
+          }
+        },
       }
     });
 
     // favicon
-    if (tab.favIconUrl) {
-      $(item).append($("<img></img>", {"src": tab.favIconUrl, "title": u}));
-    } else {
-      // avoid Chrome rendering "title" attribute as alt text since around 60.x
-      $(item).append($("<img></img>"));
-    }
+    // note: must set alt to "" to avoid Chrome rendering title as alt if the
+    // image is unavailable (since around 60.x).
+    $item.append($("<img></img>", {"src": tab.favIconUrl, "title": u, "alt": ""}));
 
     // text
-    $(item).append($("<div></div>", {"class": "title", "title": t, "text": t}));
+    $item.append($("<div></div>", {"class": "title", "title": t, "text": t}));
 
     // close button
-    $(item).append($("<div></div>", {
+    $item.append($("<div></div>", {
       "class": "close",
       "title": "Close Tab",
       "text": "x",
@@ -48,30 +68,32 @@ function createTabList(tabs) {
       }
     }));
 
-    $("#main").append(item);
+    $main.append($item);
   });
 
-  anim();
+  // bind event listeners. note that they must be done here because this
+  // function is called async'ed.
+  bindEventListeners();
+
+  $('#search').trigger("focus");
+
+  workaroundCrbug428044();
+}
+
+// See crbug.com/428044 and crbug.com/307912, and crbug.com/728174
+function workaroundCrbug428044() {
+  // Mac OS only
+  chrome.runtime.getPlatformInfo(info => {
+    if (info.os === 'mac') {
+      $("body").fadeOut(10).delay(10).fadeIn(30, function(){
+        $('#search').trigger("focus");
+      });
+    }
+  });
 }
 
 // binds all the event listeners
-function anim() {
-  $('.item').on("click", function(e) {
-    if (!e.button && !moved) {
-      chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
-    }
-    if (e.button == 1) {
-      closeTab(e, e.currentTarget);
-    }
-  });
-
-  $('.item').on("mousedown", function(e) {
-    if (!e.button) {
-      $("#main").data("tabId", $(e.currentTarget).data("tabId"));
-      moved = 0;
-    }
-  });
-
+function bindEventListeners() {
   $('.item, #search').on("keydown", function(e) {
     if (e.ctrlKey || e.altKey || e.shiftKey)
       return;
@@ -82,13 +104,6 @@ function anim() {
     while (s = s[p])
       if (s.focus && getComputedStyle(s).display != 'none')
         return s.focus();
-  });
-
-  $('.item').on("keyup", function(e) {
-    if (e.keyCode == 13)  // Enter
-      chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
-    if (e.keyCode == 46)  // Delete
-      closeTab(e, e.currentTarget);
   });
 
   // search
@@ -172,7 +187,7 @@ function mute(e) {
 }
 
 // checks for page overflow
-function mode() {
+function updateOverflowMode() {
   var noscroll = document.body.clientWidth < innerWidth ? 'overflow' : '';
   if (document.body.className != noscroll)
     document.body.className = noscroll;
@@ -183,13 +198,10 @@ $(function() {
     document.documentElement.className = 'osx';
 
   updateSearchText();
-
   chrome.tabs.query({currentWindow: true}, createTabList);
-
-  $('#search').trigger("focus");
 
   onkeydown = onkeypress = mute;
 
-  mode();
-  setInterval(mode, 50);
+  updateOverflowMode();
+  setInterval(updateOverflowMode, 50);
 });
