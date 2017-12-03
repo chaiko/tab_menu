@@ -87,9 +87,6 @@ function workaroundCrbug428044() {
     if (info.os === 'mac') {
       setTimeout(function() {
         $("body").width($("body").width() + 1);
-        setTimeout(function() {
-          $("body").width($("body").width() - 1);
-        }, 100);
       }, 100);
     }
   });
