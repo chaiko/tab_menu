@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "Tab Menu",
-  "description": "Select, close, rearrange, and search your tabs from a toolbar menu!",
-  "version": "7.1.4",
+  "description": "A minimalist tabs manager. Search, switch, rearrange, and close tabs from the toolbar menu.",
+  "version": "8.0.0",
 
   "browser_action": {
     "default_icon": "35.png",

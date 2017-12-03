@@ -1,7 +1,11 @@
 # Tab Menu
-This is a recovery of Frank Yan's Chrome extension "Tab Menu" (https://chrome.google.com/webstore/detail/galfofdpepkcahkfobimileafiobdplb). It was one of my favorite chrome extensions, but it unfortunately disappeared from Chrome Web Store since around mid 2013.
 
-The original description of the extension was:
-> Select, close, rearrange, and search your tabs from a toolbar menu!
+**Tab Menu** is a minimalist tabs manager for Chrome. It enables you to search, switch, rearrange, and close tabs from the toolbar menu. It supports both mouse operations as well as keyboard operations.
 
-The current release is available at https://chrome.google.com/webstore/detail/tab-menu/hjeifjagcmihmdcmnfjelgdgpibefmfc
+Get it [from Chrome Web Store](https://chrome.google.com/webstore/detail/tab-menu/hjeifjagcmihmdcmnfjelgdgpibefmfc).
+
+## Credits
+
+This Chrome extension was originally created by Frank Yan, with extension ID `galfofdpepkcahkfobimileafiobdplb` on Chrome Web Store. Frank stopped maintaining it, and the original extension disappeared from Chrome Web Store since around mid 2013. It was one of my favorite Chrome extensions.
+
+I recovered it from my installation and maintain it [on GitHub](https://github.com/chaiko/tab_menu), for the sake of those who love it.
