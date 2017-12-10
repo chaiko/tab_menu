@@ -1,20 +1,68 @@
+var allWindowsMode = false;
+
 var moved = 0;
+
+function setSearchText(tabs) {
+  var text = "Search from " + tabs.length + " tabs";
+  $("#search").attr("placeholder", text);
+}
 
 // updates search box placeholder text
 function updateSearchText() {
-  chrome.tabs.query({currentWindow: true}, function(tabs) {
-    var text = "Search from " + tabs.length + " tabs";
-    $("#search").attr("placeholder", text);
+  if (allWindowsMode) {
+    chrome.tabs.query({}, setSearchText);
+  } else {
+    chrome.tabs.query({currentWindow: true}, setSearchText);
+  }
+}
+
+function createWindowGroup(windowId) {
+  var num_existing_groups = $(".group").length;
+  var label = num_existing_groups ? "Window " + (1 + num_existing_groups)
+                                  : "Current window";
+
+  var $group = $("<div></div>", {
+    "class": "group",
+    "data": {
+      "windowId": windowId
+    }
   });
+
+  if (allWindowsMode) {
+    var $label_container = $("<div></div>", {
+      "class": "label-container"
+    });
+
+    var $label = $("<span></span>", {
+      "class": "window-label",
+      "text": label
+    });
+
+    $label_container.append($label);
+    $group.append($label_container);
+  }
+
+  return $group;
 }
 
 // generates the html for the tab list
 function createTabList(tabs) {
-  var $main = $("#main");
+  var $container = $("#container");
+  var prevWindowId = 0;
+  var $group = null;
   tabs.forEach(function(tab) {
     var t = tab.title, u = tab.url;
     if (!u) u = '';
     if (!t) t = u;
+
+    var windowId = tab.windowId;
+    if (windowId != prevWindowId) {
+      $group = createWindowGroup(windowId);
+      $container.append($group);
+    }
+    prevWindowId = windowId;
+
+    // console.log(tab.windowId, tab.title);
 
     var $item = $("<div></div>", {
       "tabindex": 0,
@@ -28,6 +76,7 @@ function createTabList(tabs) {
         "click": function(e) {
           if (!e.button && !moved) {
             chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+            chrome.windows.update($(e.currentTarget).parent().data("windowId"), { focused : true });
           }
           if (e.button == 1) {
             closeTab(e, e.currentTarget);
@@ -41,7 +90,6 @@ function createTabList(tabs) {
         },
         "mousedown": function(e) {
           if (!e.button) {
-            $("#main").data("tabId", $(e.currentTarget).data("tabId"));
             moved = 0;
           }
         },
@@ -68,7 +116,7 @@ function createTabList(tabs) {
       }
     }));
 
-    $main.append($item);
+    $group.append($item);
   });
 
   // bind event listeners. note that they must be done here because this
@@ -110,7 +158,7 @@ function bindEventListeners() {
   $('#search').on('keyup change', function(e) {
     var v = $(this).val();
     if (v) {
-      $('#main').sortable('disable');
+      $('#container').sortable('disable');
       v = v.toLowerCase().split(' ');
       $('.item').each(function() {
         for (var i = 0; i < v.length; i++) {
@@ -125,12 +173,12 @@ function bindEventListeners() {
       });
     } else {
       $('.item').css('display', 'block');
-      $('#main').sortable('enable');
+      $('#container').sortable('enable');
     }
   });
 
   // makes the tab list sortable with drag-and-drop
-  $('#main').sortable({
+  $('#container').sortable({
     // forcePlaceholderSize: true,
     opacity: .7,
     distance: 5,
@@ -143,36 +191,57 @@ function bindEventListeners() {
     },
     stop: function() {
     },
-    update: function() {
-      if ($("#main").data("tabId")) {
-        $(".item").each(function(i) {
-          if ($("#main").data("tabId") == $(this).data("tabId")) {
-            chrome.tabs.move(
-              $("#main").data("tabId"), { index: i },
-              function(tab) {
-                chrome.tabs.get(tab.id, function(t) {
-                  if (t.index != i) location.reload();
-                });
+    update: function(event, ui) {
+      $(".item", ui.item.parent()).each(function(index) {
+        if (ui.item.data("tabId") == $(this).data("tabId")) {
+          chrome.tabs.move(
+            ui.item.data("tabId"), {
+              "windowId": ui.item.parent().data("windowId"),
+              "index": index
+            }, function(tab) {
+              // TODO: focus if the current tab is moved to another window (how about
+              // the original focused tab in that window?)
+
+              // refresh the popup if something going wrong
+              chrome.tabs.get(tab.id, function(t) {
+                if (t.index != index) location.reload();
               });
-            $("#main").data("tabId", 0);
-          }
-        });
-      }
+            }
+          );
+        }
+      });
     }
   });
 }
 
 // closes tab and removes it from the list
 function closeTab(e, tab) {
-  chrome.tabs.remove($(tab).data("tabId"));
-  $(tab).remove();
-  updateSearchText();
+  chrome.tabs.remove($(tab).data("tabId"), function() {
+    $(tab).remove();
+    updateSearchText();
+  });
 
   e.stopPropagation();
   e.preventDefault();
 }
 
+// main function
 $(function() {
-  updateSearchText();
-  chrome.tabs.query({currentWindow: true}, createTabList);
+  chrome.storage.sync.get({
+    "allWindowsMode": false  // default value
+  }, function(items) {
+    allWindowsMode = items.allWindowsMode;  // set globally
+
+    updateSearchText();
+
+    chrome.tabs.query({currentWindow: true}, function(tabs) {
+      createTabList(tabs);
+      if (allWindowsMode) {
+        // create groups for other windows after the current window
+        chrome.tabs.query({currentWindow: false}, function(tabs) {
+          createTabList(tabs);
+        });
+      }
+    });
+  });
 });
