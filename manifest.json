@@ -6,8 +6,17 @@
   "version": "8.0.1",
 
   "browser_action": {
-    "default_icon": "35.png",
+    "default_icon": {
+      "16": "16.png",
+      "32": "35.png",
+      "48": "48.png",
+      "128": "128.png"
+    },
     "default_popup": "popup.html"
+  },
+
+  "background": {
+    "scripts": ["background.js"]
   },
 
   "icons": {
@@ -17,7 +26,7 @@
     "128": "128.png"
   },
 
-  "permissions": [ "tabs" ],
+  "permissions": [ "tabs", "storage", "contextMenus" ],
 
   "update_url": "https://clients2.google.com/service/update2/crx"
 }
