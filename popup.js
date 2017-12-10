@@ -16,6 +16,12 @@ function updateSearchText() {
   }
 }
 
+function selectTab(tabId, windowId) {
+  chrome.tabs.update(tabId, { selected : true }, function() {
+    chrome.windows.update(windowId, { focused : true });
+  });
+}
+
 function createWindowGroup(windowId) {
   var num_existing_groups = $(".group").length;
   var label = num_existing_groups ? "Window " + (1 + num_existing_groups)
@@ -75,8 +81,8 @@ function createTabList(tabs) {
       "on": {
         "click": function(e) {
           if (!e.button && !moved) {
-            chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
-            chrome.windows.update($(e.currentTarget).parent().data("windowId"), { focused : true });
+            selectTab($(e.currentTarget).data("tabId"),
+                      $(e.currentTarget).parent().data("windowId"));
           }
           if (e.button == 1) {
             closeTab(e, e.currentTarget);
@@ -84,7 +90,8 @@ function createTabList(tabs) {
         },
         "keyup": function(e) {
           if (e.keyCode == 13)  // Enter
-            chrome.tabs.update($(e.currentTarget).data("tabId"), { selected : true });
+            selectTab($(e.currentTarget).data("tabId"),
+                      $(e.currentTarget).parent().data("windowId"));
           if (e.keyCode == 46)  // Delete
             closeTab(e, e.currentTarget);
         },
@@ -140,19 +147,34 @@ function workaroundCrbug428044() {
   });
 }
 
+function onKeyboardNavigate(e) {
+  if (e.ctrlKey || e.altKey || e.shiftKey)
+    return;
+
+  if (e.keyCode != 38 && e.keyCode != 40)  // Up or Down
+    return;
+
+  var $navigables = $(".item, #search");
+  var index = $navigables.index(e.currentTarget);
+
+  if (e.keyCode == 38) {  // Up
+    index--;
+  } else if (e.keyCode == 40) {  // Down
+    index++;
+  } else {
+    return;
+  }
+
+  if (index >= 0 && index < $navigables.length) {
+    e.stopPropagation();
+    e.preventDefault();
+    return $navigables[index].focus();
+  }
+}
+
 // binds all the event listeners
 function bindEventListeners() {
-  $('.item, #search').on("keydown", function(e) {
-    if (e.ctrlKey || e.altKey || e.shiftKey)
-      return;
-    var s = e.currentTarget, p;
-    if (e.keyCode == 38) p = 'previousSibling';  // Up
-    else if (e.keyCode == 40) p = 'nextSibling';  // Down
-    else return;
-    while (s = s[p])
-      if (s.focus && getComputedStyle(s).display != 'none')
-        return s.focus();
-  });
+  $('.item, #search').on("keydown", onKeyboardNavigate);
 
   // search
   $('#search').on('keyup change', function(e) {
@@ -192,24 +214,25 @@ function bindEventListeners() {
     stop: function() {
     },
     update: function(event, ui) {
-      $(".item", ui.item.parent()).each(function(index) {
-        if (ui.item.data("tabId") == $(this).data("tabId")) {
-          chrome.tabs.move(
-            ui.item.data("tabId"), {
-              "windowId": ui.item.parent().data("windowId"),
-              "index": index
-            }, function(tab) {
-              // TODO: focus if the current tab is moved to another window (how about
-              // the original focused tab in that window?)
+      var index = $(".item", ui.item.parent()).index(ui.item);
+      chrome.tabs.move(
+        ui.item.data("tabId"), {
+          "windowId": ui.item.parent().data("windowId"),
+          "index": index
+        }, function(tab) {
+          // TODO: focus if the current tab is moved to another window (how about
+          // the original focused tab in that window?) Also update the focus
+          // highlight in both windows, so that we won't get 2 selected items in
+          // one window and none in the other.
+          //
+          // chrome.windows.update(ui.item.parent().data("windowId"), { focused : true });
 
-              // refresh the popup if something going wrong
-              chrome.tabs.get(tab.id, function(t) {
-                if (t.index != index) location.reload();
-              });
-            }
-          );
+          // refresh the popup if something going wrong
+          chrome.tabs.get(tab.id, function(t) {
+            if (t.index != index) location.reload();
+          });
         }
-      });
+      );
     }
   });
 }
