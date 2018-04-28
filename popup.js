@@ -3,6 +3,7 @@ var allWindowsMode = false;
 var moved = 0;
 
 function setSearchText(tabs) {
+  // TODO: "Search from 129 tabs in 7 windows" (in allWindowsMode)
   var text = "Search from " + tabs.length + " tabs";
   $("#search").attr("placeholder", text);
 }
@@ -266,5 +267,16 @@ $(function() {
         });
       }
     });
+
+    // see https://www.w3schools.com/howto/howto_js_sticky_header.asp and https://www.w3schools.com/howto/howto_css_fixed_menu.asp
+    var sticky = $("#search-container").offset().top;
+    window.onscroll = function() {
+      if (window.pageYOffset > sticky) {
+        $("#search-container").addClass("sticky");
+      } else {
+        $("#search-container").removeClass("sticky");
+      }
+    }
   });
 });
+
