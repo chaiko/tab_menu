@@ -164,6 +164,7 @@ img {
   color: #fff;
 }
 
+/*
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -178,3 +179,4 @@ img {
   background: rgba(204,204,204,0.2);
   box-shadow: inset 0 0 4px rgba(128,128,128,0.3);
 }
+*/
