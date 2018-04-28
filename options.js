@@ -1,7 +1,7 @@
 // Saves options to chrome.storage.sync.
 function save_options() {
   var mode = $("input[name=window-mode]:checked").val();
-  
+
   chrome.storage.sync.set({
     windowMode: mode
   }, function() {

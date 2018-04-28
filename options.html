@@ -6,28 +6,23 @@
     <script src="jquery.min.js"></script>
     <script src="options.js"></script>
     <style>
-     body: { padding: 10px; }
+     body { padding: 0px; font: 14px; line-height: 24px;}
+     #status { color: green; }
+     input.radio { margin-left: 6px; margin-right: 4px; }
     </style>
   </head>
-  
+
   <body>
-    <label>
-      Display tabs for:
-      <input type="radio" name="window-mode" value="current">Current window
-      <input type="radio" name="window-mode" value="all">All windows
-    </label>
-
-    <br/>
-
-    <label>
-      <input type="checkbox" id="like">
-      I like colors.
-    </label>
-
     <div id="status"></div>
 
+    <label>
+      Display tabs for: <br/>
+      <input type="radio" name="window-mode" value="current" class="radio">Current window <br/>
+      <input type="radio" name="window-mode" value="all" class="radio">All windows <br/>
+    </label>
+
     <br/>
-    
+
     <button id="save">Save</button>
   </body>
 </html>
