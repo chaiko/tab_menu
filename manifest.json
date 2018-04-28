@@ -3,7 +3,7 @@
 
   "name": "Tab Menu",
   "description": "A minimalist tab manager. Search, switch, rearrange, and close tabs from the toolbar menu.",
-  "version": "9.0.2",
+  "version": "9.0.3",
 
   "browser_action": {
     "default_icon": {
