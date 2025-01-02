@@ -7,6 +7,8 @@ zip $TARGET           \
     popup.*           \
     options.*         \
     *.png             \
+    jquery.min.js     \
+    jquery-ui.min.js  \
     background.js     \
     LICENSE.txt       \
     README.md
