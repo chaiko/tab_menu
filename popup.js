@@ -4,8 +4,8 @@ var moved = 0;
 
 function setSearchText(tabs) {
   // TODO: "Search from 129 tabs in 7 windows" (in allWindowsMode)
-  var text = "Search from " + tabs.length + " tabs";
-  $("#search").attr("placeholder", text);
+  var text = `Search from ${tabs.length} tabs`;
+  document.getElementById("search").setAttribute("placeholder", text);
 }
 
 // updates search box placeholder text
@@ -13,15 +13,15 @@ function updateSearchText() {
   if (allWindowsMode) {
     chrome.tabs.query({}, setSearchText);
   } else {
-    chrome.tabs.query({currentWindow: true}, setSearchText);
+    chrome.tabs.query({ currentWindow: true }, setSearchText);
   }
 }
 
 function selectTab(tabId, windowId) {
-  // TODO: chrome.tabs.Tab.selected => chrome.tabs.Tab.highlighted
+  // TODO(??): chrome.tabs.Tab.selected => chrome.tabs.Tab.highlighted
   // see https://developer.chrome.com/docs/extensions/develop/migrate/api-calls
-  chrome.tabs.update(tabId, { selected : true }, function() {
-    chrome.windows.update(windowId, { focused : true });
+  chrome.tabs.update(tabId, { selected: true }, function () {
+    chrome.windows.update(windowId, { focused: true });
   });
 }
 
@@ -252,33 +252,33 @@ function closeTab(e, tab) {
 }
 
 // main function
-$(function() {
+document.addEventListener("DOMContentLoaded", function () {
   chrome.storage.sync.get({
     "allWindowsMode": false  // default value
-  }, function(items) {
+  }, function (items) {
     allWindowsMode = items.allWindowsMode;  // set globally
 
     updateSearchText();
 
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    chrome.tabs.query({ currentWindow: true }, function (tabs) {
       createTabList(tabs);
       if (allWindowsMode) {
         // create groups for other windows after the current window
-        chrome.tabs.query({currentWindow: false}, function(tabs) {
+        chrome.tabs.query({ currentWindow: false }, function (tabs) {
           createTabList(tabs);
         });
       }
     });
 
     // see https://www.w3schools.com/howto/howto_js_sticky_header.asp and https://www.w3schools.com/howto/howto_css_fixed_menu.asp
-    var sticky = $("#search-container").offset().top;
-    window.onscroll = function() {
+    const searchContainer = document.getElementById("search-container");
+    const sticky = searchContainer.offsetTop;
+    window.onscroll = function () {
       if (window.pageYOffset > sticky) {
-        $("#search-container").addClass("sticky");
+        searchContainer.classList.add("sticky");
       } else {
-        $("#search-container").removeClass("sticky");
+        searchContainer.classList.remove("sticky");
       }
-    }
+    };    
   });
 });
-
