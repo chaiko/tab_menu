@@ -18,6 +18,8 @@ function updateSearchText() {
 }
 
 function selectTab(tabId, windowId) {
+  // TODO: chrome.tabs.Tab.selected => chrome.tabs.Tab.highlighted
+  // see https://developer.chrome.com/docs/extensions/develop/migrate/api-calls
   chrome.tabs.update(tabId, { selected : true }, function() {
     chrome.windows.update(windowId, { focused : true });
   });

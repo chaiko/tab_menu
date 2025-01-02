@@ -1,11 +1,11 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "Tab Menu",
   "description": "A minimalist tab manager. Search, switch, rearrange, and close tabs from the toolbar menu.",
-  "version": "9.0.3",
+  "version": "9.1.0",
 
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "16.png",
       "32": "35.png",
@@ -16,12 +16,11 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
 
   "options_ui": {
     "page": "options.html",
-    "chrome_style": true,
     "open_in_tab": false
   },
 
@@ -34,5 +33,7 @@
 
   "permissions": [ "tabs", "storage", "contextMenus" ],
 
-  "update_url": "https://clients2.google.com/service/update2/crx"
+  "update_url": "https://clients2.google.com/service/update2/crx",
+
+  "content_security_policy": {}
 }

@@ -1,28 +1,38 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Tab Menu Options</title>
-    <script src="jquery.min.js"></script>
-    <script src="options.js"></script>
-    <style>
-     body { padding: 0px; font: 14px; line-height: 24px;}
-     #status { color: green; }
-     input.radio { margin-left: 6px; margin-right: 4px; }
-    </style>
-  </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tab Menu Options</title>
+  <style>
+   body { padding: 20px; font: 14px; line-height: 24px;}
+   #status {
+     top: 0px; position: fixed;
+     color: green; opacity: 0;
+     transition: opacity 0.5s ease-in-out;
+     pointer-events: none;
+   }
+   input.radio { margin-left: 6px; margin-right: 4px; }
+   .option { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div id="status"></div>
 
-  <body>
-    <div id="status"></div>
+  <!--
+  <label>
+    Display tabs for: <br/>
+    <input type="radio" name="window-mode" value="current" class="radio">Current window <br/>
+    <input type="radio" name="window-mode" value="all" class="radio">All windows <br/>
+  </label>
+  -->
 
-    <label>
-      Display tabs for: <br/>
-      <input type="radio" name="window-mode" value="current" class="radio">Current window <br/>
-      <input type="radio" name="window-mode" value="all" class="radio">All windows <br/>
-    </label>
+  <div id="options-container"></div>
 
-    <br/>
+  <br/>
 
-    <button id="save">Save</button>
-  </body>
+  <button id="save">Save</button>
+
+  <script src="options.js"></script>
+</body>
 </html>
